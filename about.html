@@ -41,37 +41,99 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 40px auto;
             padding: 0 20px;
-            text-align: center;
         }
 
-        /* Profile Layout Styling */
+        /* Profile Block */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
         .profile-pic {
-            width: 160px;
-            height: 160px;
+            width: 140px;
+            height: 140px;
             object-fit: cover;
             border-radius: 50%;
             border: 2px solid #00ff88;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
             margin-bottom: 20px;
         }
 
-        h1 {
+        h1, h2 {
             color: #ffffff;
-            font-size: 28px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 15px;
         }
+
+        h1 { font-size: 28px; margin-bottom: 10px; }
+        h2 { font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 8px; margin-top: 40px; }
 
         .bio-text {
             line-height: 1.8;
             color: #888888;
             font-size: 16px;
-            max-width: 500px;
+            max-width: 550px;
             margin: 0 auto;
+        }
+
+        /* Skills Pill Layout */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-badge {
+            background-color: #111;
+            border: 1px solid #222;
+            color: #00ff88;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        /* Timeline Split Columns */
+        .timeline-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .timeline-columns { grid-template-columns: 1fr; }
+        }
+
+        .timeline-card {
+            background-color: #111111;
+            border-left: 2px solid #00ff88;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+
+        .timeline-card .year {
+            color: #00ff88;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .timeline-card .title {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .timeline-card .inst {
+            color: #666666;
+            font-size: 13px;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -84,45 +146,90 @@
         <a href="/contact.html">Contact</a>
     </nav>
 
-    <div class="container" id="profile-container">
+    <div class="container">
+        <div class="profile-header" id="profile-container"></div>
+
+        <h2>Core Capabilities</h2>
+        <div class="skills-grid" id="skills-container"></div>
+
+        <div class="timeline-columns">
+            <div>
+                <h2>Education</h2>
+                <div id="education-container"></div>
+            </div>
+            <div>
+                <h2>Experience</h2>
+                <div id="experience-container"></div>
+            </div>
         </div>
+    </div>
 
     <script>
-        const container = document.getElementById('profile-container');
-
         const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycGZldnh6b2NwZWRwdGhrbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDg5NjIsImV4cCI6MjA5NzUyNDk2Mn0.GMxuE_B17gwzUaqPlaHzwlY20i8XYaMNOoxY9WGijLw';
 
         try {
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            async function loadAbout() {
-                let { data: profile, error } = await supabase
-                    .from('about')
-                    .select('*');
+            async function loadAllAboutData() {
+                // Fetch from all three database blocks asynchronously
+                const [aboutRes, skillsRes, timelineRes] = await Promise.all([
+                    supabase.from('about').select('*'),
+                    supabase.from('skills').select('*'),
+                    supabase.from('timeline').select('*')
+                ]);
 
-                if (error || !profile || profile.length === 0) {
-                    return; 
+                // 1. Render Profile Row
+                if (aboutRes.data && aboutRes.data.length > 0) {
+                    const profile = aboutRes.data[0];
+                    document.getElementById('profile-container').innerHTML = `
+                        ${profile.image_url ? `<img src="${profile.image_url}" class="profile-pic" alt="Profile">` : ''}
+                        <h1>${profile.title}</h1>
+                        <p class="bio-text">${profile.bio}</p>
+                    `;
                 }
 
-                // Extract the first row from our table
-                const data = profile[0];
+                // 2. Render Skills Grid
+                if (skillsRes.data && skillsRes.data.length > 0) {
+                    document.getElementById('skills-container').innerHTML = skillsRes.data.map(skill => `
+                        <div class="skill-badge">${skill.name}</div>
+                    `).join('');
+                }
 
-                const imageHtml = data.image_url 
-                    ? `<img src="${data.image_url}" class="profile-pic" alt="Profile">` 
-                    : '';
+                // 3. Split & Render History Timeline Matrix
+                if (timelineRes.data && timelineRes.data.length > 0) {
+                    const eduContainer = document.getElementById('education-container');
+                    const expContainer = document.getElementById('experience-container');
 
-                container.innerHTML = `
-                    ${imageHtml}
-                    <h1>${data.title}</h1>
-                    <p class="bio-text">${data.bio}</p>
-                `;
+                    const eduHtml = timelineRes.data
+                        .filter(item => item.type === 'Education')
+                        .map(item => `
+                            <div class="timeline-card">
+                                <div class="year">${item.year}</div>
+                                <div class="title">${item.title}</div>
+                                <div class="inst">${item.institution}</div>
+                            </div>
+                        `).join('');
+
+                    const expHtml = timelineRes.data
+                        .filter(item => item.type === 'Experience')
+                        .map(item => `
+                            <div class="timeline-card">
+                                <div class="year">${item.year}</div>
+                                <div class="title">${item.title}</div>
+                                <div class="inst">${item.institution}</div>
+                            </div>
+                        `).join('');
+
+                    eduContainer.innerHTML = eduHtml || '<div style="color:#555;font-size:14px;">No logs uploaded.</div>';
+                    expContainer.innerHTML = expHtml || '<div style="color:#555;font-size:14px;">No logs uploaded.</div>';
+                }
             }
 
-            loadAbout();
+            loadAllAboutData();
 
         } catch (err) {
-            // Quiet fail
+            // Failure containment
         }
     </script>
 </body>
