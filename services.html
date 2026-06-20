@@ -132,8 +132,9 @@
 
         .loading-text {
             text-align: center;
-            color: #666;
+            color: #888;
             font-size: 16px;
+            font-family: monospace;
         }
     </style>
 </head>
@@ -154,25 +155,31 @@
         const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycGZldnh6b2NwZWRwdGhrbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDg5NjIsImV4cCI6MjA5NzUyNDk2Mn0.GMxuE_B17gwzUaqPlaHzwlY20i8XYaMNOoxY9WGijLw';
 
-        try {
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        async function loadServicesPage() {
+            const container = document.getElementById('services-container');
+            
+            try {
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            async function loadServicesPage() {
-                // Fetch services list directly (pulling title, description, image_url, and your new whatsapp_url)
+                // Fetching everything safely from your services table
                 let { data: services, error } = await supabase.from('services').select('*');
 
-                if (error || !services || services.length === 0) {
-                    document.getElementById('services-container').innerHTML = '<div class="loading-text">No services found.</div>';
+                if (error) {
+                    container.innerHTML = `<div class="loading-text" style="color: #ff4444;">Supabase Error: ${error.message}</div>`;
+                    return;
+                }
+
+                if (!services || services.length === 0) {
+                    container.innerHTML = '<div class="loading-text">No services found in your database table.</div>';
                     return;
                 }
 
                 let gridHtml = '<div class="services-grid">';
                 
                 services.forEach(service => {
-                    // Use your database custom link. If empty, fall back to a default wa.me root path
-                    const customUrl = service.whatsapp_url && service.whatsapp_url.trim() !== '' 
-                        ? service.whatsapp_url.trim() 
-                        : 'https://wa.me/';
+                    // Smart fallback check: looks for 'whatsapp_url', then 'link_url', then defaults to a standard link
+                    const databaseLink = service.whatsapp_url || service.link_url || '';
+                    const customUrl = databaseLink.trim() !== '' ? databaseLink.trim() : 'https://wa.me/';
 
                     const imageMarkup = service.image_url 
                         ? `<img src="${service.image_url}" class="service-img" alt="${service.title || 'Service Image'}">`
@@ -193,13 +200,14 @@
                 });
 
                 gridHtml += '</div>';
-                document.getElementById('services-container').innerHTML = gridHtml;
-            }
+                container.innerHTML = gridHtml;
 
-            loadServicesPage();
-        } catch (err) {
-            document.getElementById('services-container').innerHTML = '<div class="loading-text">Error loading layout.</div>';
+            } catch (err) {
+                container.innerHTML = `<div class="loading-text" style="color: #ff4444;">Browser Script Error: ${err.message}</div>`;
+            }
         }
+
+        loadServicesPage();
     </script>
 </body>
 </html>
