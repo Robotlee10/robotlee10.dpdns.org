@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>robotlee10 // About</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             background-color: #0a0a0a;
@@ -135,6 +136,36 @@
             font-size: 13px;
             margin-top: 2px;
         }
+
+        /* Social Icons Wrapper at bottom */
+        .icons-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-bottom: 40px;
+        }
+
+        .social-icon-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 55px;
+            height: 55px;
+            background-color: #111111;
+            border: 1px solid #222222;
+            border-radius: 50%;
+            font-size: 22px;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .social-icon-btn:hover {
+            transform: scale(1.15);
+        }
     </style>
 </head>
 <body>
@@ -161,21 +192,42 @@
                 <div id="experience-container"></div>
             </div>
         </div>
+
+        <h2>Connect</h2>
+        <div class="icons-wrapper" id="socials-container"></div>
     </div>
 
     <script>
         const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycGZldnh6b2NwZWRwdGhrbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDg5NjIsImV4cCI6MjA5NzUyNDk2Mn0.GMxuE_B17gwzUaqPlaHzwlY20i8XYaMNOoxY9WGijLw';
 
+        function getIconClass(platformName) {
+            const name = platformName.toLowerCase().trim();
+            if (name.includes('github')) return 'fa-brands fa-github';
+            if (name.includes('linkedin')) return 'fa-brands fa-linkedin-in';
+            if (name.includes('twitter') || name.includes('x')) return 'fa-brands fa-x-twitter';
+            if (name.includes('instagram')) return 'fa-brands fa-instagram';
+            if (name.includes('whatsapp')) return 'fa-brands fa-whatsapp';
+            if (name.includes('medium')) return 'fa-brands fa-medium';
+            if (name.includes('tiktok')) return 'fa-brands fa-tiktok';
+            if (name.includes('discord')) return 'fa-brands fa-discord';
+            if (name.includes('farcaster')) return 'fa-solid fa-cube';
+            if (name.includes('facebook')) return 'fa-brands fa-facebook-f';
+            if (name.includes('youtube')) return 'fa-brands fa-youtube';
+            if (name.includes('email') || name.includes('mail')) return 'fa-solid fa-envelope';
+            return 'fa-solid fa-link';
+        }
+
         try {
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             async function loadAllAboutData() {
-                // Fetch from all three database blocks asynchronously
-                const [aboutRes, skillsRes, timelineRes] = await Promise.all([
+                // Fetching all 4 matrix channels at the exact same time
+                const [aboutRes, skillsRes, timelineRes, socialsRes] = await Promise.all([
                     supabase.from('about').select('*'),
                     supabase.from('skills').select('*'),
-                    supabase.from('timeline').select('*')
+                    supabase.from('timeline').select('*'),
+                    supabase.from('socials').select('*')
                 ]);
 
                 // 1. Render Profile Row
@@ -195,7 +247,7 @@
                     `).join('');
                 }
 
-                // 3. Split & Render History Timeline Matrix
+                // 3. Render History Timeline Matrix
                 if (timelineRes.data && timelineRes.data.length > 0) {
                     const eduContainer = document.getElementById('education-container');
                     const expContainer = document.getElementById('experience-container');
@@ -222,6 +274,25 @@
 
                     eduContainer.innerHTML = eduHtml || '<div style="color:#555;font-size:14px;">No logs uploaded.</div>';
                     expContainer.innerHTML = expHtml || '<div style="color:#555;font-size:14px;">No logs uploaded.</div>';
+                }
+
+                // 4. Render Social Network Channels
+                if (socialsRes.data && socialsRes.data.length > 0) {
+                    document.getElementById('socials-container').innerHTML = socialsRes.data.map(item => {
+                        const accentColor = item.color || '#00ff88';
+                        const iconClass = getIconClass(item.platform);
+                        return `
+                            <a href="${item.url}" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="social-icon-btn"
+                               title="${item.platform}"
+                               onmouseenter="this.style.borderColor='${accentColor}'; this.style.color='${accentColor}'; this.style.boxShadow='0 0 20px ${accentColor}44';"
+                               onmouseleave="this.style.borderColor='#222222'; this.style.color='#ffffff'; this.style.boxShadow='none';">
+                               <i class="${iconClass}"></i>
+                            </a>
+                        `;
+                    }).join('');
                 }
             }
 
