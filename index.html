@@ -84,68 +84,50 @@
             text-transform: uppercase;
         }
 
-        /* --- HORIZONTAL TEXT CONTAINER --- */
-        .swiper-wrapper {
+        /* Centered display card container holding the rolling data matrix */
+        .status-card-carousel {
+            background-color: #111111;
+            border: 1px solid #222222;
+            border-radius: 8px;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+            min-height: 120px;
             display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Hides horizontal scrollbar on Firefox */
-            margin-bottom: 40px;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        .swiper-wrapper::-webkit-scrollbar {
-            display: none; /* Hides horizontal scrollbar on Chrome/Safari */
-        }
-
-        /* Each content section matches your original screen footprint */
-        .swiper-slide {
-            flex: 0 0 100%;
+        .slide-item {
+            display: none;
             width: 100%;
-            scroll-snap-align: start;
-            box-sizing: border-box;
+            animation: fadeInOut 0.8s ease-in-out;
         }
 
-        /* Headline styled to stand out right after System Online */
+        .slide-item.active {
+            display: block;
+        }
+
         .headline-text {
             color: #ffffff;
             font-size: 20px;
             font-weight: bold;
-            margin: 0 auto 15px auto;
-            max-width: 500px;
+            margin-bottom: 14px;
             line-height: 1.4;
         }
 
-        /* Subheadline paragraph styling underneath */
         .subheadline-text {
-            line-height: 1.8;
-            color: #888888;
-            font-size: 16px;
-            margin: 0 auto;
-            max-width: 550px;
-        }
-
-        /* Latest Status Card Box Module at the bottom */
-        .status-card {
-            background-color: #111111;
-            border: 1px solid #222222;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: left;
-        }
-
-        .status-card h2 {
-            color: #ffffff;
-            font-size: 18px;
-            margin: 0 0 15px 0;
-            letter-spacing: 1px;
-            font-weight: normal;
-        }
-
-        .status-card p {
+            line-height: 1.6;
             color: #888888;
             font-size: 15px;
-            line-height: 1.6;
-            margin: 0;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -165,15 +147,10 @@
         <h1>robotlee10</h1>
         <div class="status-tag">SYSTEM // ONLINE</div>
 
-        <div class="swiper-wrapper" id="text-swiper">
-            <div class="swiper-slide">
-                <p style="color: #444;">Connecting data streams...</p>
+        <div class="status-card-carousel" id="carousel-box">
+            <div class="slide-item active">
+                <p style="color: #444;">Connecting secure streams...</p>
             </div>
-        </div>
-
-        <div class="status-card">
-            <h2>Latest Status</h2>
-            <p>Deploying multi-page core architecture via Vercel pipeline successfully.</p>
         </div>
     </div>
 
@@ -185,39 +162,54 @@
             try {
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
                 
-                // Fetch up to 5 updates from your home table, newest rows first
                 let { data: homeRows } = await supabase
                     .from('home')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(5);
+                    .limit(10);
 
-                const swiperContainer = document.getElementById('text-swiper');
+                const carouselBox = document.getElementById('carousel-box');
 
                 if (homeRows && homeRows.length > 0) {
-                    let swiperHtml = '';
+                    let combinedHtml = '';
 
-                    // Generate a swipe block for every single row item
-                    homeRows.forEach(row => {
-                        swiperHtml += `
-                            <div class="swiper-slide">
+                    homeRows.forEach((row, index) => {
+                        const activeClass = index === 0 ? 'active' : '';
+                        combinedHtml += `
+                            <div class="slide-item ${activeClass}">
                                 <div class="headline-text">${row.headline || ''}</div>
-                                <p class="subheadline-text">${row.subheadline || ''}</p>
+                                <div class="subheadline-text">${row.subheadline || ''}</div>
                             </div>
                         `;
                     });
 
-                    swiperContainer.innerHTML = swiperHtml;
+                    carouselBox.innerHTML = combinedHtml;
+
+                    if (homeRows.length > 1) {
+                        initAutomaticRotation();
+                    }
                 } else {
-                    // Fallback visual content if table has 0 rows configured
-                    swiperContainer.innerHTML = `
-                        <div class="swiper-slide">
+                    carouselBox.innerHTML = `
+                        <div class="slide-item active">
                             <div class="headline-text">Engineering Custom Digital Solutions.</div>
-                            <p class="subheadline-text">Welcome to my digital outpost. I build clean, high-performance web spaces and test automation systems.</p>
+                            <div class="subheadline-text">Welcome to my digital outpost. I build clean, high-performance web spaces and test automation systems.</div>
                         </div>
                     `;
                 }
             } catch (err) {}
+        }
+
+        function initAutomaticRotation() {
+            let currentSlideIndex = 0;
+            
+            setInterval(() => {
+                const slides = document.querySelectorAll('.slide-item');
+                if (slides.length <= 1) return;
+
+                slides[currentSlideIndex].classList.remove('active');
+                currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+                slides[currentSlideIndex].classList.add('active');
+            }, 5000); 
         }
 
         loadHomePage();
