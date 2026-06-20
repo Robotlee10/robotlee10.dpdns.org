@@ -41,7 +41,7 @@
         }
 
         .container {
-            max-width: 700px;
+            max-width: 600px;
             margin: 60px auto;
             padding: 0 20px;
             text-align: center;
@@ -91,8 +91,17 @@
             margin-bottom: 40px;
         }
 
-        .section-title {
+        /* Fixed structural design from screenshot */
+        .status-card {
+            background-color: #111111;
+            border: 1px solid #222222;
+            border-radius: 8px;
+            padding: 25px;
             text-align: left;
+            overflow: hidden; /* Keeps ticker bounds clean */
+        }
+
+        .status-card h2 {
             color: #ffffff;
             font-size: 18px;
             margin: 0 0 15px 0;
@@ -100,58 +109,26 @@
             font-weight: normal;
         }
 
-        /* --- SIDE SCROLLING CAROUSEL ENGINE --- */
-        .scroll-wrapper {
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            padding-bottom: 15px;
-            text-align: left;
-            scrollbar-width: thin;
-            scrollbar-color: #222 transparent;
+        /* The ticker scrolling line viewport */
+        .ticker-viewport {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
         }
 
-        /* Webkit layout customization for scrollbars */
-        .scroll-wrapper::-webkit-scrollbar {
-            height: 6px;
-        }
-        .scroll-wrapper::-webkit-scrollbar-thumb {
-            background-color: #222;
-            border-radius: 10px;
-        }
-        .scroll-wrapper::-webkit-scrollbar-thumb:hover {
-            background-color: #00ff88;
-        }
-
-        .status-card {
-            flex: 0 0 280px; /* Forces cards to stay side-by-side without shrinking */
-            scroll-snap-align: start;
-            background-color: #111111;
-            border: 1px solid #222222;
-            border-radius: 8px;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
-
-        .status-card:hover {
-            border-color: #00ff88;
-        }
-
-        .card-date {
-            font-family: monospace;
-            font-size: 11px;
-            color: #00ff88;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .status-card p {
+        /* Animation styling that moves text automatically sideways if it builds up */
+        .ticker-text {
+            display: inline-block;
             color: #888888;
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.6;
-            margin: 0;
+            padding-left: 100%;
+            animation: statusTicker 25s linear infinite;
+        }
+
+        @keyframes statusTicker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
         }
     </style>
 </head>
@@ -173,10 +150,10 @@
 
         <p class="bio-text" id="hero-subtitle">...</p>
 
-        <h2 class="section-title">Log History</h2>
-        <div class="scroll-wrapper" id="status-container">
-            <div class="status-card">
-                <p style="color: #444;">Loading database packets...</p>
+        <div class="status-card">
+            <h2>Latest Status</h2>
+            <div class="ticker-viewport">
+                <span id="status-content" class="ticker-text">Loading secure updates...</span>
             </div>
         </div>
     </div>
@@ -189,51 +166,27 @@
             try {
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
                 
-                // Fetch up to 10 rows from 'home' table, newest first
-                let { data: homeRows, error } = await supabase
+                // Fetch latest 5 rows from your home table
+                let { data: homeRows } = await supabase
                     .from('home')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(10);
-
-                const container = document.getElementById('status-container');
+                    .limit(5);
 
                 if (homeRows && homeRows.length > 0) {
-                    // 1. Set your main bio paragraph using the newest row's subheadline
+                    // Bio always tracks your most recent row's subheadline
                     document.getElementById('hero-subtitle').innerText = homeRows[0].subheadline || '';
 
-                    // 2. Loop over every row inside the array to build horizontal cards dynamically
-                    let scrollHtml = '';
-                    homeRows.forEach(row => {
-                        // Format the timestamp nicely if available
-                        let displayDate = 'LOG // UPDATE';
-                        if (row.created_at) {
-                            const dateObj = new Date(row.created_at);
-                            displayDate = dateObj.toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric', 
-                                year: 'numeric' 
-                            });
-                        }
+                    // Combines all your different status headlines separated by distinct spacer hashes
+                    const combinedStatus = homeRows
+                        .map(row => row.headline)
+                        .filter(text => text)
+                        .join('  ///  ');
 
-                        scrollHtml += `
-                            <div class="status-card">
-                                <div class="card-date">● ${displayDate}</div>
-                                <p>${row.headline || 'Empty logs.'}</p>
-                            </div>
-                        `;
-                    });
-
-                    container.innerHTML = scrollHtml;
+                    document.getElementById('status-content').innerText = combinedStatus;
                 } else {
-                    // Fallback visual layout if database row sets are completely empty
                     document.getElementById('hero-subtitle').innerText = "Welcome to my digital outpost. I build clean, high-performance web spaces and test automation systems.";
-                    container.innerHTML = `
-                        <div class="status-card">
-                            <div class="card-date">● DEFAULT ACTIVE</div>
-                            <p>Deploying multi-page core architecture via Vercel pipeline successfully.</p>
-                        </div>
-                    `;
+                    document.getElementById('status-content').innerText = "Deploying multi-page core architecture via Vercel pipeline successfully.";
                 }
             } catch (err) {}
         }
