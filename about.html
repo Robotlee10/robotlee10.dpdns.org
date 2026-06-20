@@ -234,4 +234,231 @@
             background-color: transparent;
             border: 1px solid #00ff88;
             color: #00ff88;
-            font-family:
+            font-family: monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: rgba(0, 255, 136, 0.05);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+        }
+
+        #form-status {
+            font-family: monospace;
+            font-size: 13px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/services.html">Services</a>
+        <a href="/about.html" class="active">About</a>
+    </nav>
+
+    <div class="container">
+        <div class="profile-header" id="profile-container">
+            <p style="color: #444; font-family: monospace;">INITIALIZING SYSTEM PROFILE...</p>
+        </div>
+
+        <h2>Core Capabilities</h2>
+        <div class="skills-grid" id="skills-container"></div>
+
+        <div class="timeline-columns">
+            <div>
+                <h2>Education</h2>
+                <div id="education-container"></div>
+            </div>
+            <div>
+                <h2>Experience</h2>
+                <div id="experience-container"></div>
+            </div>
+        </div>
+
+        <h2>Connect with me</h2>
+        <div class="icons-wrapper" id="socials-container"></div>
+
+        <!-- Integrated Live Client Intake Form Matrix -->
+        <div class="contact-portal">
+            <h2>Initialize Contact</h2>
+            <p>Drop your transmission coordinates below to submit an inquiry stream.</p>
+            
+            <form id="intake-form">
+                <div class="form-group">
+                    <label for="client-email">Email Address</label>
+                    <input type="email" id="client-email" class="form-control" placeholder="name@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="client-message">Project Parameters / Message</label>
+                    <textarea id="client-message" class="form-control" placeholder="Describe the system framework or service specifications needed..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send Signal →</button>
+            </form>
+            
+            <div id="form-status"></div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycGZldnh6b2NwZWRwdGhrbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDg5NjIsImV4cCI6MjA5NzUyNDk2Mn0.GMxuE_B17gwzUaqPlaHzwlY20i8XYaMNOoxY9WGijLw';
+
+        function getIconClass(platformName) {
+            const name = platformName ? platformName.toLowerCase().trim() : '';
+            if (name.includes('github')) return 'fa-brands fa-github';
+            if (name.includes('linkedin')) return 'fa-brands fa-linkedin-in';
+            if (name.includes('twitter') || name.includes('x')) return 'fa-brands fa-x-twitter';
+            if (name.includes('instagram')) return 'fa-brands fa-instagram';
+            if (name.includes('whatsapp')) return 'fa-brands fa-whatsapp';
+            if (name.includes('medium')) return 'fa-brands fa-medium';
+            if (name.includes('tiktok')) return 'fa-brands fa-tiktok';
+            if (name.includes('discord')) return 'fa-brands fa-discord';
+            if (name.includes('farcaster')) return 'fa-solid fa-cube';
+            if (name.includes('facebook')) return 'fa-brands fa-facebook-f';
+            if (name.includes('youtube')) return 'fa-brands fa-youtube';
+            if (name.includes('email') || name.includes('mail')) return 'fa-solid fa-envelope';
+            return 'fa-solid fa-link';
+        }
+
+        async function loadAllAboutData() {
+            try {
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                const [aboutRes, skillsRes, timelineRes, socialsRes] = await Promise.all([
+                    supabase.from('about').select('*'),
+                    supabase.from('skills').select('*'),
+                    supabase.from('timeline').select('*'),
+                    supabase.from('socials').select('*')
+                ]);
+
+                // 1. Render Profile Row safely
+                const profileContainer = document.getElementById('profile-container');
+                if (aboutRes.data && aboutRes.data.length > 0) {
+                    const profile = aboutRes.data[0];
+                    profileContainer.innerHTML = `
+                        ${profile.image_url ? `<img src="${profile.image_url}" class="profile-pic" alt="Profile">` : ''}
+                        <h1>${profile.title || 'robotlee10'}</h1>
+                        <p class="bio-text">${profile.bio || ''}</p>
+                    `;
+                } else {
+                    profileContainer.innerHTML = `<h1>robotlee10</h1><p class="bio-text">Developer Profile Matrix</p>`;
+                }
+
+                // 2. Render Skills Grid safely
+                const skillsContainer = document.getElementById('skills-container');
+                if (skillsRes.data && skillsRes.data.length > 0) {
+                    skillsContainer.innerHTML = skillsRes.data.map(skill => `
+                        <div class="skill-badge">${skill.name || ''}</div>
+                    `).join('');
+                }
+
+                // 3. Render History Timeline Matrix safely
+                if (timelineRes.data && timelineRes.data.length > 0) {
+                    const eduContainer = document.getElementById('education-container');
+                    const expContainer = document.getElementById('experience-container');
+
+                    const eduHtml = timelineRes.data
+                        .filter(item => item && item.type === 'Education')
+                        .map(item => `
+                            <div class="timeline-card">
+                                <div class="year">${item.year || ''}</div>
+                                <div class="title">${item.title || ''}</div>
+                                <div class="inst">${item.institution || ''}</div>
+                            </div>
+                        `).join('');
+
+                    const expHtml = timelineRes.data
+                        .filter(item => item && item.type === 'Experience')
+                        .map(item => `
+                            <div class="timeline-card">
+                                <div class="year">${item.year || ''}</div>
+                                <div class="title">${item.title || ''}</div>
+                                <div class="inst">${item.institution || ''}</div>
+                            </div>
+                        `).join('');
+
+                    if (eduContainer) eduContainer.innerHTML = eduHtml || '<div style="color:#555;font-size:14px;">No educational logs.</div>';
+                    if (expContainer) expContainer.innerHTML = expHtml || '<div style="color:#555;font-size:14px;">No experience logs.</div>';
+                }
+
+                // 4. Render Social Network Channels safely
+                const socialsContainer = document.getElementById('socials-container');
+                if (socialsRes.data && socialsRes.data.length > 0 && socialsContainer) {
+                    socialsContainer.innerHTML = socialsRes.data.map(item => {
+                        if (!item) return '';
+                        const accentColor = item.color || '#00ff88';
+                        const iconClass = getIconClass(item.platform);
+                        return `
+                            <a href="${item.url || '#'}" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="social-icon-btn"
+                               title="${item.platform || ''}"
+                               onmouseenter="this.style.borderColor='${accentColor}'; this.style.color='${accentColor}'; this.style.boxShadow='0 0 20px ${accentColor}44';"
+                               onmouseleave="this.style.borderColor='#222222'; this.style.color='#ffffff'; this.style.boxShadow='none';">
+                               <i class="${iconClass}"></i>
+                            </a>
+                        `;
+                    }).join('');
+                }
+
+                // 5. Wire up Form Handler ONLY after database pipeline runs to prevent blocking execution
+                setupFormListener(supabase);
+
+            } catch (err) {
+                console.error("Initialization error containment invoked:", err);
+            }
+        }
+
+        function setupFormListener(supabaseInstance) {
+            const contactForm = document.getElementById('intake-form');
+            if (!contactForm) return;
+
+            contactForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const emailInput = document.getElementById('client-email').value;
+                const messageInput = document.getElementById('client-message').value;
+                const statusDiv = document.getElementById('form-status');
+                
+                if (!statusDiv) return;
+
+                statusDiv.style.display = 'block';
+                statusDiv.style.color = '#888888';
+                statusDiv.innerText = 'TRANSMITTING SIGNAL...';
+
+                try {
+                    const { error } = await supabaseInstance
+                        .from('inquiries')
+                        .insert([{ email: emailInput, message: messageInput }]);
+
+                    if (error) throw error;
+
+                    statusDiv.style.color = '#00ff88';
+                    statusDiv.innerText = 'SIGNAL RECEIVED SUCCESSFULLY.';
+                    contactForm.reset();
+                } catch (err) {
+                    statusDiv.style.color = '#ff3333';
+                    statusDiv.innerText = 'TRANSMISSION FAILED. CORRUPTED PACKET.';
+                    console.error(err);
+                }
+            });
+        }
+
+        // Execute layout generation on window load state
+        window.addEventListener('DOMContentLoaded', loadAllAboutData);
+    </script>
+</body>
+</html>
