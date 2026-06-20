@@ -56,7 +56,6 @@
             margin-bottom: 40px;
         }
 
-        /* Flex row layout for clean icon placement */
         .icons-wrapper {
             display: flex;
             justify-content: center;
@@ -65,7 +64,6 @@
             flex-wrap: wrap;
         }
 
-        /* Circular glowing icon button design */
         .social-icon-btn {
             display: flex;
             justify-content: center;
@@ -75,13 +73,12 @@
             background-color: #111111;
             border: 1px solid #222222;
             border-radius: 50%;
-            font-size: 28px; /* Control image/logo size */
+            font-size: 28px;
             color: #ffffff;
             text-decoration: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Slight pop animation when hovered */
         .social-icon-btn:hover {
             transform: scale(1.15);
         }
@@ -97,8 +94,7 @@
     </nav>
 
     <div class="container">
-        <h1>Connect with me</h1>
-        
+        <h1>Connect</h1>
         <div class="icons-wrapper" id="socials-container"></div>
     </div>
 
@@ -108,17 +104,18 @@
         const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycGZldnh6b2NwZWRwdGhrbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDg5NjIsImV4cCI6MjA5NzUyNDk2Mn0.GMxuE_B17gwzUaqPlaHzwlY20i8XYaMNOoxY9WGijLw';
 
-        // Helper function to turn table text names into proper icon classes
         function getIconClass(platformName) {
             const name = platformName.toLowerCase().trim();
             if (name.includes('github')) return 'fa-brands fa-github';
             if (name.includes('linkedin')) return 'fa-brands fa-linkedin-in';
             if (name.includes('twitter') || name.includes('x')) return 'fa-brands fa-x-twitter';
             if (name.includes('instagram')) return 'fa-brands fa-instagram';
+            if (name.includes('whatsapp')) return 'fa-brands fa-whatsapp';
+            if (name.includes('medium')) return 'fa-brands fa-medium';
             if (name.includes('facebook')) return 'fa-brands fa-facebook-f';
             if (name.includes('youtube')) return 'fa-brands fa-youtube';
             if (name.includes('email') || name.includes('mail')) return 'fa-solid fa-envelope';
-            return 'fa-solid fa-link'; // Fallback link icon if nothing matches
+            return 'fa-solid fa-link';
         }
 
         try {
