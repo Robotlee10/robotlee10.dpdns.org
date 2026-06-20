@@ -62,10 +62,21 @@
             padding: 24px;
             margin-bottom: 20px;
             transition: border-color 0.3s ease;
+            overflow: hidden;
         }
 
         .service-card:hover {
             border-color: #00ff88;
+        }
+
+        /* Responsive image styling */
+        .service-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #1a1a1a;
         }
 
         .service-card h3 {
@@ -93,7 +104,6 @@
 
     <div class="container">
         <h1>Services</h1>
-        
         <div id="services-container"></div>
     </div>
 
@@ -120,12 +130,20 @@
                     return; 
                 }
 
-                container.innerHTML = services.map(service => `
-                    <div class="service-card">
-                        <h3>${service.title}</h3>
-                        <p>${service.description}</p>
-                    </div>
-                `).join('');
+                container.innerHTML = services.map(service => {
+                    // Check if image_url exists, otherwise keep it blank
+                    const imageHtml = service.image_url 
+                        ? `<img src="${service.image_url}" class="service-image" alt="${service.title}">` 
+                        : '';
+
+                    return `
+                        <div class="service-card">
+                            ${imageHtml}
+                            <h3>${service.title}</h3>
+                            <p>${service.description}</p>
+                        </div>
+                    `;
+                }).join('');
             }
 
             loadServices();
