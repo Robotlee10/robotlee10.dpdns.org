@@ -422,7 +422,7 @@
             }
         }
 
-        function setupFormListener(supabaseInstance) {
+     function setupFormListener(supabaseInstance) {
             const contactForm = document.getElementById('intake-form');
             if (!contactForm) return;
 
@@ -440,8 +440,9 @@
                 statusDiv.innerText = 'TRANSMITTING SIGNAL...';
 
                 try {
+                    // Changed 'inquiries' to 'enquiries' to match your Supabase table perfectly
                     const { error } = await supabaseInstance
-                        .from('inquiries')
+                        .from('enquiries')
                         .insert([{ email: emailInput, message: messageInput }]);
 
                     if (error) throw error;
