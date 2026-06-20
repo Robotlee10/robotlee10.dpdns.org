@@ -43,7 +43,6 @@
             font-weight: bold;
         }
 
-        /* Center Content Area */
         .hero-container {
             max-width: 800px;
             margin: auto;
@@ -51,13 +50,26 @@
             text-align: center;
         }
 
+        /* Updated to support logo image alignment */
         .status-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             color: #00ff88;
             font-family: monospace;
             font-size: 13px;
             letter-spacing: 2px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             text-transform: uppercase;
+        }
+
+        /* Styles specifically for your custom logo */
+        .brand-logo {
+            width: 24px;         /* Adjust width to scale your logo size */
+            height: 24px;        /* Adjust height to scale your logo size */
+            object-fit: contain;
+            border-radius: 4px;  /* Optional wrapper design curve */
         }
 
         h1 {
@@ -81,7 +93,6 @@
             margin: 0 auto 40px auto;
         }
 
-        /* Call To Action Buttons */
         .cta-group {
             display: flex;
             justify-content: center;
@@ -133,7 +144,10 @@
     </nav>
 
     <div class="hero-container">
-        <div class="status-tag">● SYSTEM // OPERATIONAL</div>
+        <div class="status-tag">
+            <img src="logo.png" class="brand-logo" alt="logo"> 
+            SYSTEM // OPERATIONAL
+        </div>
         
         <h1 id="hero-title">...</h1>
         <p class="subtitle" id="hero-subtitle"></p>
@@ -151,11 +165,9 @@
         async function loadHomePage() {
             try {
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
                 let { data: homeRows, error } = await supabase.from('home').select('*').limit(1);
 
                 if (error || !homeRows || homeRows.length === 0) {
-                    // Fail-safe fallbacks if table configuration hasn't finished loading yet
                     document.getElementById('hero-title').innerText = "Engineering Custom Digital Solutions.";
                     document.getElementById('hero-subtitle').innerText = "Full-stack developer specializing in scalable software applications, infrastructure engineering, and system operations.";
                     return;
@@ -165,9 +177,7 @@
                 document.getElementById('hero-title').innerText = metrics.headline || '';
                 document.getElementById('hero-subtitle').innerText = metrics.subheadline || '';
 
-            } catch (err) {
-                // Buffer escape
-            }
+            } catch (err) {}
         }
 
         loadHomePage();
