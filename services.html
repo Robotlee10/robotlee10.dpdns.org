@@ -183,12 +183,22 @@
             color: #00ff88;
         }
 
-        .loading-text {
-            text-align: center;
-            color: #888;
-            font-size: 16px;
-            font-family: monospace;
-        }
+/* 🟢 NEW LOADING ICON STYLES */
+.loading-container {
+    text-align: center;
+    padding: 60px 0;
+    color: #00ff88; /* Matrix green color */
+    font-size: 28px; /* Size of the spinner icon */
+}
+
+/* Keeps your error messages clean if Supabase fails to connect */
+.loading-text {
+    text-align: center;
+    color: #888;
+    font-size: 16px;
+    font-family: monospace;
+}
+
     </style>
 </head>
 <body>
@@ -199,10 +209,12 @@
         <a href="/about.html">About</a>
     </nav>
 
-    <div class="container">
-        <h1>Our Services</h1>
-        <div id="services-container" class="loading-text">Loading tailored services...</div>
+<div class="container">
+    <h1>Our Services</h1>
+    <div id="services-container" class="loading-container">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
     </div>
+</div>
 
     <script>
         const supabaseUrl = 'https://yrpfevxzocpedpthknhi.supabase.co';
