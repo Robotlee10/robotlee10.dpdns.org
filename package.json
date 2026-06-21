@@ -1,0 +1,23 @@
+{
+  "name": "robotlee10-portfolio",
+  "version": "1.0.0",
+  "description": "Personal portfolio website with Vercel Web Analytics",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Robotlee10/robotlee10.dpdns.org.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Robotlee10/robotlee10.dpdns.org/issues"
+  },
+  "homepage": "https://github.com/Robotlee10/robotlee10.dpdns.org#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
